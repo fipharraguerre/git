@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Backups - Clientes TandemStudio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Menú</h2>
+            <ul>
+                <li><a href="/">General Summary</a></li>
+                <li><a href="#">Last 24h Jobs</a></li>
+                <li><a href="#">Errors and Warnings</a></li>
+                <li><a href="/admin">Admin Panel</a></li>
+                <!-- Agrega más items según sea necesario -->
+            </ul>
+        </div>
+        <div class="dashboard">
+            {% for row in data %}
+            <a href="/status/{{ row[0] }}" class="card-link">
+                <div class="card {% if row[1] == 'ok' %}green{% elif row[1] == 'warn' %}yellow{% else %}red{% endif %}">
+                    <h3>{{ row[0] }}</h3>
+                    <p>{{ row[2] }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

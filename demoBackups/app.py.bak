@@ -1,0 +1,69 @@
+from flask import Flask, render_template, request, redirect, url_for
+import mariadb
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Configuración de la conexión a la base de datos
+db_config = {
+    'host': 'api.facundoitest.space',
+    'user': 'facundo',
+    'password': 'myPassword',
+    'database': 'VeeamReports'
+}
+
+def get_db():
+    return mariadb.connect(**db_config)
+
+@app.route('/')
+def index():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT client_name, status, description FROM clientes")
+    data = cursor.fetchall()
+    db.close()
+    return render_template('index.html', data=data)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT client_name FROM clientes")
+    clients = cursor.fetchall()
+
+    cursor.execute("SHOW TABLES")
+    hosts = cursor.fetchall()
+
+    if request.method == 'POST':
+        client_name = request.form['client_name']
+        host_name = request.form['host_name']
+        cursor.execute("INSERT INTO client_hosts (client_name, host_name) VALUES (%s, %s)", (client_name, host_name))
+        db.commit()
+
+    cursor.execute("SELECT client_name, host_name FROM client_hosts")
+    relations = cursor.fetchall()
+
+    db.close()
+    return render_template('admin.html', clients=clients, hosts=hosts, relations=relations)
+
+@app.route('/status/<client_name>')
+def client_status(client_name):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT host_name FROM client_hosts WHERE client_name = %s", (client_name,))
+    hosts = cursor.fetchall()
+
+    combined_results = []
+    for host in hosts:
+        cursor.execute(f"SELECT * FROM {host[0]}")
+        results = cursor.fetchall()
+        for result in results:
+            result = list(result)
+            result[1] = datetime.fromtimestamp(result[1]).strftime('%Y-%m-%d %H:%M:%S')
+            combined_results.append(result)
+
+    db.close()
+    return render_template('client_status.html', client_name=client_name, results=combined_results)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5050, host='0.0.0.0')
