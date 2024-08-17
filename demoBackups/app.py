@@ -56,8 +56,7 @@ def update_client_status():
                     SUM(CASE WHEN result IN ('Success', 'ok') THEN 1 ELSE 0 END) AS success_count,
                     SUM(CASE WHEN result = 'Warn' THEN 1 ELSE 0 END) AS warn_count,
                     SUM(CASE WHEN result = 'Failed' THEN 1 ELSE 0 END) AS fail_count
-                FROM {host_name}
-                WHERE creationtime >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 1 DAY)) * 1000
+                FROM `{host_name}`
             """)
 
             result = cursor.fetchone()
@@ -81,7 +80,7 @@ def update_client_status():
 
 @app.route('/')
 def index():
-    # update_client_status()  # Actualizar el estado de los clientes antes de cargar el dashboard
+    update_client_status()  # Actualizar el estado de los clientes antes de cargar el dashboard
     db = get_db()
     cursor = db.cursor()
     cursor.execute("SELECT nombre, estado, mensaje FROM clientes")
@@ -123,7 +122,7 @@ def add_client():
 
 @app.route('/admin/delete_client', methods=['POST'])
 def delete_client():
-    client_name = request.form['client_to_delete']
+    client_name = request.form['delete_client_name']
     db = get_db()
     cursor = db.cursor()
 
@@ -142,12 +141,13 @@ def client_status(client_name):
 
     results = []
     for host_name in host_names:
-        cursor.execute(f"SELECT creationtime, vmname, type, result, detail FROM `{host_name[0]}`")
+        cursor.execute(f"SELECT datetime, vmname, type, result, detail FROM `{host_name[0]}`")
         host_results = cursor.fetchall()
         for result in host_results:
-            creationtime = parse_creationtime(result[0])
-            formatted_time = creationtime.strftime('%Y-%m-%d %H:%M:%S')
-            results.append((formatted_time, result[1], result[2], result[3], result[4]))
+            #creationtime = result[0]
+            #formatted_time = creationtime.strftime('%Y-%m-%d %H:%M:%S')
+            #results.append((formatted_time, result[1], result[2], result[3], result[4]))
+            results.append((result[0], result[1], result[2], result[3], result[4]))
 
     return render_template('client_status.html', client_name=client_name, results=results)
 
