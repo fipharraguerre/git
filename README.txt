@@ -1,3 +1,6 @@
+
+---
+
 # Azure Backup Vaults & Host Monitoring
 
 This project is designed to monitor and log events from hosts and Azure Backup Vaults. The main functionality includes logging all restore points and saving events that result in a status other than "Success". This allows tracking and analyzing the frequency of failed or warning states for different tasks over a set period.
@@ -70,7 +73,7 @@ The API will be available at `http://localhost:5000`.
 
 ### Planned Enhancements
 
-- Implement a separate Python job that runs every n hours to manage the `unsuccessful_tasks` table.
+- Implement a separate Python job that runs every 4 hours to manage the `unsuccessful_tasks` table.
 - Improve filtering options and allow users to query unsuccessful tasks by date, host, or client.
 
 ## License
@@ -81,3 +84,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 Feel free to fork the repository and submit pull requests. If you encounter any issues, please open an issue on the GitHub repository.
 
+---
